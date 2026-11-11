@@ -1,0 +1,9 @@
+# Ambiente virtual (cada um cria o seu, não vai pro GitHub)
+.venv/
+
+# Arquivos de cache do Python
+__pycache__/
+*.pyc
+
+# Arquivos com segredos (token etc.) — nunca vão pro GitHub
+.env
