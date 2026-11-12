@@ -47,7 +47,7 @@ COLUNAS = [
 # ---------------------------------------------------------------
 def pegar_token():
     """Lê o token da variável de ambiente (nunca escreva o token no código!)."""
-    token = os.environ.get("SPTRANS_TOKEN")
+    token = os.environ.get("SPTRANS_TOKEN", "").strip().strip('"')
     if not token:
         print("Erro: defina a variável de ambiente SPTRANS_TOKEN com o seu token.")
         sys.exit(1)
