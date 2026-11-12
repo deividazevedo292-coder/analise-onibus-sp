@@ -57,6 +57,22 @@ def total_por_coleta(df):
     )
 
 
+def mostrar_aviso_coleta(totais):
+    """Avisa que o histórico ainda é curto (menos de 2 dias de coleta)."""
+    inicio = totais["data_hora"].min()
+    fim = totais["data_hora"].max()
+    horas_de_coleta = (fim - inicio).total_seconds() / 3600
+    quantidade_coletas = totais["data_hora"].nunique()
+
+    if horas_de_coleta < 48:
+        st.info(
+            f"⏳ Coletando dados desde {inicio:%d/%m às %H:%M} "
+            f"({quantidade_coletas} coletas até agora). "
+            "Os gráficos ficam completos após alguns dias de histórico."
+        )
+
+
+
 def mostrar_numeros_gerais(df, totais):
     ultima = totais.sort_values("data_hora").iloc[-1]
     linhas_ativas = df[df["data_hora"] == ultima["data_hora"]]["letreiro"].nunique()
@@ -130,6 +146,8 @@ def main():
         st.warning("Exibindo **dados de exemplo** enquanto a coleta real ainda não começou.")
 
     totais = total_por_coleta(df)
+    if not eh_exemplo:
+        mostrar_aviso_coleta(totais)
 
     mostrar_numeros_gerais(df, totais)
     st.divider()
