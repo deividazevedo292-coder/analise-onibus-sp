@@ -17,6 +17,7 @@ Como rodar:
 
 import os
 
+import altair as alt
 import pandas as pd
 import streamlit as st
 
@@ -106,13 +107,33 @@ def mostrar_por_dia_da_semana(totais):
 
 def mostrar_top_linhas(df):
     st.subheader("Linhas com mais ônibus em circulação")
+
+    # soma os dois sentidos de cada linha em cada coleta e depois tira a média
+    por_coleta = df.groupby(["data_hora", "letreiro"], as_index=False)["qtd_onibus"].sum()
     top = (
-        df.groupby("letreiro")["qtd_onibus"].mean()
-        .sort_values(ascending=False)
+        por_coleta.groupby("letreiro", as_index=False)["qtd_onibus"].mean()
+        .sort_values("qtd_onibus", ascending=False)
         .head(10)
-        .round(1)
     )
-    st.bar_chart(top, horizontal=True, x_label="Média de ônibus", y_label="Linha")
+    terminais = df.drop_duplicates("letreiro")[["letreiro", "terminal_0", "terminal_1"]]
+    top = top.merge(terminais, on="letreiro")
+    top["qtd_onibus"] = top["qtd_onibus"].round(1)
+
+    grafico = (
+        alt.Chart(top)
+        .mark_bar()
+        .encode(
+            x=alt.X("qtd_onibus:Q", title="Média de ônibus rodando"),
+            y=alt.Y("letreiro:N", sort="-x", title="Linha"),  # ordena da maior para a menor
+            tooltip=[
+                alt.Tooltip("letreiro", title="Linha"),
+                alt.Tooltip("terminal_0", title="De"),
+                alt.Tooltip("terminal_1", title="Até"),
+                alt.Tooltip("qtd_onibus", title="Ônibus"),
+            ],
+        )
+    )
+    st.altair_chart(grafico)
 
 
 def mostrar_linha_escolhida(df):
