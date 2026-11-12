@@ -67,7 +67,7 @@ def mostrar_aviso_coleta(totais):
     if horas_de_coleta < 48:
         st.info(
             f"⏳ Coletando dados desde {inicio:%d/%m às %H:%M} "
-            f"({quantidade_coletas} coletas até agora). "
+            f"({quantidade_coletas} {'coleta' if quantidade_coletas == 1 else 'coletas'} até agora). "
             "Os gráficos ficam completos após alguns dias de histórico."
         )
 
@@ -151,11 +151,14 @@ def main():
 
     mostrar_numeros_gerais(df, totais)
     st.divider()
-    mostrar_horario_de_pico(totais)
-    col_esq, col_dir = st.columns(2)
-    with col_esq:
-        mostrar_por_dia_da_semana(totais)
-    with col_dir:
+    if totais["data_hora"].nunique() >= 12:  # gráficos de média precisam de histórico
+        mostrar_horario_de_pico(totais)
+        col_esq, col_dir = st.columns(2)
+        with col_esq:
+            mostrar_por_dia_da_semana(totais)
+        with col_dir:
+            mostrar_top_linhas(df)
+    else:
         mostrar_top_linhas(df)
     st.divider()
     mostrar_linha_escolhida(df)
