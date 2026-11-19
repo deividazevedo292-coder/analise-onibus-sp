@@ -7,3 +7,5 @@ __pycache__/
 
 # Arquivos com segredos (token etc.) — nunca vão pro GitHub
 .env
+
+.streamlit/secrets.toml
