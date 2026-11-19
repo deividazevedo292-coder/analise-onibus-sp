@@ -172,8 +172,8 @@ def desenhar_mapa(tabela):
     for _, onibus in tabela.iterrows():
         folium.Marker(
             location=[onibus["latitude"], onibus["longitude"]],
-            tooltip=f"Ônibus {onibus['prefixo']}",
-            popup=folium.Popup(f"<b style='font-size:18px'>Ônibus {onibus['prefixo']}</b>", max_width=220),
+            tooltip=f"Ônibus {onibus['numero']}",
+            popup=folium.Popup(f"<b style='font-size:18px'>Ônibus {onibus['numero']}</b>", max_width=220),
             icon=ICONE_ONIBUS(),
         ).add_to(mapa)
 
@@ -243,6 +243,9 @@ def resposta():
         return
 
     onibus = tabela[(tabela["letreiro"] == linha) & (tabela["destino"] == destino)]
+    # Numera os ônibus 1, 2, 3... (mais fácil que o número de frota, tipo 16079)
+    onibus = onibus.reset_index(drop=True)
+    onibus["numero"] = onibus.index + 1
 
     st.subheader("3. Onde eles estão agora")
 
@@ -256,14 +259,14 @@ def resposta():
 
     desenhar_mapa(onibus)
 
-    st.write("**Quer ver um ônibus no Google Maps?** Toque nele:")
+    st.write("**Quer ver mais de perto?** Toque em um ônibus para abrir no Google Maps:")
     for _, cada in onibus.iterrows():
-        rotulo = f"Ônibus {cada['prefixo']}"
+        rotulo = f"📍 Abrir o ônibus {cada['numero']} no Google Maps"
         if cada["acessivel"] == "Sim":
-            rotulo += "  ♿"
+            rotulo += " ♿ acessível para cadeira de rodas"
         st.link_button(rotulo, link_google_maps(cada), use_container_width=True)
 
-    st.caption(f"Atualizado às {horario}. Esta tela se atualiza sozinha. ♿ = ônibus com acessibilidade.")
+    st.write(f"🔄 Os ônibus mudam de lugar sozinhos no mapa. Última atualização: **{horario}**.")
 
 
 resposta()
