@@ -197,20 +197,36 @@ st.set_page_config(page_title="Onde está meu ônibus?", layout="centered", init
 st.markdown(CSS_LETRA_GRANDE, unsafe_allow_html=True)
 st.title("Onde está meu ônibus?")
 
+@st.cache_data(ttl=60 * 60)
+def linhas_e_destinos():
+    """
+    Lista de linhas e seus destinos, guardada por 1 hora.
+
+    Por que separado? As posições mudam a cada 30 segundos, mas a lista de linhas
+    quase não muda. Se a lista de opções mudasse a cada 30s, o Streamlit "esqueceria"
+    a linha que a pessoa escolheu e a tela voltaria para o começo.
+    """
+    tabela, _ = buscar_posicoes()
+    return {
+        letreiro: sorted(grupo["destino"].unique())
+        for letreiro, grupo in tabela.groupby("letreiro")
+    }
+
+
 try:
-    tabela_inicial, _ = buscar_posicoes()
+    destinos_por_linha = linhas_e_destinos()
 except ErroAPI:
     st.error("O serviço de ônibus não respondeu agora. Tente de novo em alguns minutos.")
     st.stop()
 
 # --- PERGUNTA 1: qual linha? ---------------------------------
 st.subheader("1. Qual ônibus você vai pegar?")
-linhas = sorted(tabela_inicial["letreiro"].unique())
 linha = st.selectbox(
     "Toque aqui e digite o número que aparece na frente do ônibus",
-    linhas,
+    sorted(destinos_por_linha.keys()),
     index=None,
     placeholder="Exemplo: 875A",
+    key="linha_escolhida",
 )
 
 if linha is None:
@@ -218,7 +234,7 @@ if linha is None:
     st.stop()
 
 # --- PERGUNTA 2: para onde? ----------------------------------
-destinos = sorted(tabela_inicial.loc[tabela_inicial["letreiro"] == linha, "destino"].unique())
+destinos = destinos_por_linha[linha]
 
 st.subheader("2. Para onde você vai?")
 if len(destinos) == 1:
@@ -230,6 +246,7 @@ else:
         destinos,
         format_func=lambda d: f"Indo para {d.title()}",
         label_visibility="collapsed",
+        key="destino_escolhido",
     )
 
 
