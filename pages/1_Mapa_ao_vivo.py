@@ -148,11 +148,24 @@ CSS_LETRA_GRANDE = """
 """
 
 
+def ICONE_ONIBUS():
+    """Emoji de ônibus dentro de um círculo branco com borda azul, para destacar no mapa."""
+    return folium.DivIcon(
+        html=(
+            "<div style='font-size:26px; width:42px; height:42px; line-height:38px; text-align:center;"
+            " background:white; border:3px solid #1d6fcc; border-radius:50%;"
+            " box-shadow:0 2px 6px rgba(0,0,0,0.35);'>🚌</div>"
+        ),
+        icon_size=(42, 42),
+        icon_anchor=(21, 21),   # o centro do círculo fica exatamente onde o ônibus está
+    )
+
+
 def desenhar_mapa(tabela):
     """
     Mapa no estilo que todo mundo já conhece (parecido com o Google Maps):
-    ruas com nome e um "alfinete" com desenho de ônibus em cada ônibus.
-    Tocando no alfinete aparece o número do ônibus.
+    ruas com nome e um emoji 🚌 em cada ônibus.
+    Tocando no emoji aparece o número do ônibus.
     """
     mapa = folium.Map(tiles="OpenStreetMap", control_scale=False)
 
@@ -161,7 +174,7 @@ def desenhar_mapa(tabela):
             location=[onibus["latitude"], onibus["longitude"]],
             tooltip=f"Ônibus {onibus['prefixo']}",
             popup=folium.Popup(f"<b style='font-size:18px'>Ônibus {onibus['prefixo']}</b>", max_width=220),
-            icon=folium.Icon(color="blue", icon="bus", prefix="fa"),
+            icon=ICONE_ONIBUS(),
         ).add_to(mapa)
 
     # Dá zoom automático para mostrar todos os ônibus da linha na tela
@@ -239,7 +252,7 @@ def resposta():
 
     quantidade = len(onibus)
     texto = "1 ônibus está" if quantidade == 1 else f"{quantidade} ônibus estão"
-    st.success(f"**{texto} indo para {destino.title()} agora.** Cada alfinete azul no mapa é um ônibus.")
+    st.success(f"**{texto} indo para {destino.title()} agora.** Cada 🚌 no mapa é um ônibus de verdade, onde ele está agora.")
 
     desenhar_mapa(onibus)
 
